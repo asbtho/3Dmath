@@ -36,7 +36,7 @@ void Renderer3D::render(){
         } 
         Point2D start = projection(rotatedStartPoint);
         Point2D end = projection(rotatedEndPoint);
-        SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
+        SDL_RenderLine(renderer, start.x, start.y, end.x, end.y);
     }
     SDL_RenderPresent(renderer);
 
