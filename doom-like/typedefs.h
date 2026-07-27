@@ -5,6 +5,7 @@
 
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
 typedef struct _vec2 {
     double x;
     double y;
