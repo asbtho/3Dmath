@@ -5,9 +5,9 @@
 
 #include <SDL3/SDL.h>
 #include "typedefs.h"
-#include "player.h"
+#include "p_player.h"
 #include "g_game_state.h"
-#include "utils.h"
+#include "u_utils.h"
 
 typedef struct _r_plane {
     int t[1024];

@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+#include "p_player.h"
+#include "g_game_state.h"
+
 void GameLoop() {
 
 }
