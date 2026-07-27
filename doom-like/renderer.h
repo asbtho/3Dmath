@@ -6,7 +6,7 @@
 #include <SDL3/SDL.h>
 #include "typedefs.h"
 #include "player.h"
-#include "game_state.h"
+#include "g_game_state.h"
 #include "utils.h"
 
 typedef struct _r_plane {
