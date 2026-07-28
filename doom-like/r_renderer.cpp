@@ -147,6 +147,24 @@ void R_ClearScreenBuffer(){
     memset(screen_buffer, 0, sizeof(uint32_t) * scrnw * scrnh);
 }
 
+// (gamemath.com):Look under Appendix A: Geometric Tests Section A.7 and Section A.8.
+// 1st Edition (Print):Chapter 13 (Geometric Tests)
+// 2nd Edition (Print):Appendix A: Geometric Tests and Chapter 9 (Geometric Primitives).
+void R_ClipBehindPlayer(double *ax, double *ay, double bx, double by){
+    double px1 = 1;
+    double py1 = 1;
+    double px2 = 200;
+    double py2 = 1;
+
+    double a = (px1 - px2) * (*ay - py2) - (py1 - py2) * (*ax - px2);
+    double b = (py1 - py2) * (*ax - bx) - (px1 - px2) * (*ay - by);
+
+    double t = a / b;
+
+    *ax = *ax - (t * (bx - *ax));
+    *ay = *ay - (t * (by - *ay));
+}
+
 void R_RenderSectors(player_t *player, game_state_t *game_state) {
     // Center point of the screen used to shift NDC (Normalized Device Coordinates) 
     // to screen pixel space (e.g., origin from top-left (0,0)).
@@ -174,6 +192,8 @@ void R_RenderSectors(player_t *player, game_state_t *game_state) {
             
             /* =========================================================================
              * STEP 1: TRANSLATION (World Space -> Camera Relative Space)
+             * gamemath.com 3D Math Primer for Graphics and Game Development by Fletcher Dunn and Ian Parberry.
+             * 2nd Edition / Online Edition: Chapter 3: Multiple Coordinate Spaces Section 3.2: Coordinate Space Transformations (Translating relative to a local origin).
              * =========================================================================
              * Shift wall endpoints A (x1, y1) and B (x2, y2) so that the player is 
              * treated as the origin (0, 0).
@@ -193,6 +213,8 @@ void R_RenderSectors(player_t *player, game_state_t *game_state) {
 
             /* =========================================================================
              * STEP 2: ROTATION (Camera Space -> View/Screen Alignment Space)
+             * gamemath.com - 3D Math Primer for Graphics and Game Developmentby Fletcher Dunn & Ian Parberry,
+             * 2nd Edition / Online Edition: Chapter 5: Matrices and Linear Transformations Section 5.1: 2D Rotation.
              * =========================================================================
              * Rotate world coordinates by player->dir_angle (theta).
              * Aligns player's facing direction to look straight up the depth axis (Z).
@@ -221,8 +243,20 @@ void R_RenderSectors(player_t *player, game_state_t *game_state) {
             double wx2 = dx2 * SN - dy2 * CN;
             double wz2 = dx2 * CN + dy2 * SN;
 
+            // if z1 & z2 < 0 ( wall completely behind player) -- skip it
+            // if z1 or z2 is behing the player -> clip it
+            if (wz1 < 0 && wz2 < 0){
+                continue;
+            } else if (wz1 < 0) {
+                R_ClipBehindPlayer(&wx1, &wz1, wx2, wz2);
+            } else if (wz2 < 0) {
+                R_ClipBehindPlayer(&wx2, &wz2, wx1, wz1);
+            }
+            
             /* =========================================================================
              * STEP 3: PERSPECTIVE PROJECTION (3D -> 2D Screen Space Scaling)
+             * gamemath.com 3D Math Primer for Graphics and Game Developmentby Fletcher Dunn & Ian Parberry
+             * 2nd Edition / Online Edition: Chapter 10: Mathematical Topics from 3D Graphics Section 10.1: Viewing in 3D & Perspective Projection (also discussed in Section 6.4: 4×4 Matrices and Perspective Projection).
              * =========================================================================
              * Similar Triangles Principle:
              * Objects further away (larger wz depth) appear smaller on screen.
