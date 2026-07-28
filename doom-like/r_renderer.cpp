@@ -27,9 +27,11 @@ void R_Shutdown(){
 }
 
 void R_UpdateScreen(){
-    SDL_UpdateTexture(screen_texture, NULL, screen_buffer, scrnw * sizeof(unsigned int));
     SDL_RenderClear(sdl_renderer);
+
+    SDL_UpdateTexture(screen_texture, NULL, screen_buffer, scrnw * sizeof(unsigned int));
     SDL_RenderTexture(sdl_renderer, screen_texture, NULL, NULL);
+    
     SDL_RenderPresent(sdl_renderer);
 }
 
