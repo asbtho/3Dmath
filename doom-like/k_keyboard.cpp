@@ -82,8 +82,8 @@ void K_ProcessKeyStates(player_t *player, double delta_time) {
     }
 
     if (keystates.s_left) {
-        player->position.x += cos(player->dir_angle - M_PI / 2) * MOV_SPEED * delta_time;
-        player->position.y += sin(player->dir_angle - M_PI / 2) * MOV_SPEED * delta_time;
+        player->position.x += cos(player->dir_angle + M_PI / 2) * MOV_SPEED * delta_time;
+        player->position.y += sin(player->dir_angle + M_PI / 2) * MOV_SPEED * delta_time;
     } else if (keystates.s_right) {
         player->position.x -= cos(player->dir_angle + M_PI / 2) * MOV_SPEED * delta_time;
         player->position.y -= sin(player->dir_angle + M_PI / 2) * MOV_SPEED * delta_time;

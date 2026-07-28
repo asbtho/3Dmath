@@ -50,7 +50,7 @@ void R_Shutdown();
 void R_Render(player_t *player, game_state_t *game_state);
 void R_DrawWalls(player_t *player, game_state_t *game_state);
 sector_t R_CreateSector(int height, int elevation, unsigned int color, unsigned int ceil_clr, unsigned int floor_clr);
-void R_SectorAddWall(sector_t *sector, wall_t *vertices);
+void R_SectorAddWall(sector_t *sector, wall_t vertices);
 void R_AddSectorToQueue(sector_t *sector);
 wall_t R_CreateWall(int ax, int ay, int bx, int by);
 wall_t R_CreatePortal(int ax, int ay, int bx, int by, int th, int bh);

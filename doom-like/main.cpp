@@ -28,6 +28,25 @@ int main() {
     W_Init(SCRNW, SCRNH);
     R_Init(W_Get(), &game_state);
 
+    sector_t s1 = R_CreateSector(10, 0, 0xd6382d, 0xf54236, 0x9c2921);
+    // 0xd6382d: Red = 214, Green = 56, Blue = 45
+    // 0xf54236: Red = 245, Green = 66, Blue = 54
+    // 0x9c2921: Red = 156, Green = 41, Blue = 33
+
+    int s1v[4*4] = {
+        70, 220, 100, 220,
+        100, 220, 100, 240,
+        100, 240, 70, 240,
+        70, 240, 70, 220
+    };
+
+    for (int i = 0; i < 16; i += 4) {
+        wall_t w = R_CreateWall(s1v[i], s1v[i + 1], s1v[i + 2], s1v[i + 3]);
+        R_SectorAddWall(&s1, w);
+    }
+
+    R_AddSectorToQueue(&s1);
+
     GameLoop(&game_state, &player);
 
     return 0;
