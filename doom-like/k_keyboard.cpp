@@ -76,9 +76,9 @@ void K_ProcessKeyStates(player_t *player, double delta_time) {
     }
 
     if (keystates.left) {
-        player->dir_angle -= ROT_SPEED * delta_time;
-    } else if (keystates.right) {
         player->dir_angle += ROT_SPEED * delta_time;
+    } else if (keystates.right) {
+        player->dir_angle -= ROT_SPEED * delta_time;
     }
 
     if (keystates.s_left) {
