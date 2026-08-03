@@ -12,21 +12,21 @@ struct Point3D {
     float x, y, z;
 };
 
-struct Vertex {
-    int start, end;
+struct Edge {
+    int startIndex, endIndex;
 };
 
 // Renderer3D class handles the rendering of 3D objects onto a 2D SDL window.
 class Renderer3D {
     public:
-        Renderer3D(SDL_Window* window, SDL_Renderer* renderer, const std::vector<Point3D>& points, const std::vector<Vertex>& vertices);
+        Renderer3D(SDL_Window* window, SDL_Renderer* renderer, const std::vector<Point3D>& points, const std::vector<Edge>& edges);
         void render();
     private:
         Point3D rotateX(Point3D point);
         Point3D rotateY(Point3D point);
         Point2D projection(Point3D point);
 
-        float rotation = 0.0f;
+        float rotationAngle = 0.0f;
         float focalLength = 10.0f;
         float DeltaTime = 0.0f;
         bool rotationXenabled = true;
@@ -37,6 +37,6 @@ class Renderer3D {
         int WindowSizeY;
         SDL_Renderer* renderer;
 
-        std::vector<Point3D> points;
-        std::vector<Vertex> edges;
+        std::vector<Point3D> vertices;
+        std::vector<Edge> edgeIndices;
 };

@@ -1,11 +1,11 @@
 #include "Renderer3D.h"
 
-// Constructor for the Renderer3D class. Initializes the renderer with the provided SDL window, SDL renderer, points, and edges.
-Renderer3D::Renderer3D(SDL_Window* _window, SDL_Renderer* _renderer, const std::vector<Point3D>& _points, const std::vector<Vertex>& _edges){
+// Constructor for the Renderer3D class. Initializes the renderer with the provided SDL window, SDL renderer, vertices, and edge indices.
+Renderer3D::Renderer3D(SDL_Window* _window, SDL_Renderer* _renderer, const std::vector<Point3D>& _vertices, const std::vector<Edge>& _edgeIndices){
     SDL_GetWindowSize(_window, &WindowSizeX, &WindowSizeY);
     renderer = _renderer;
-    points = _points;
-    edges = _edges;
+    vertices = _vertices;
+    edgeIndices = _edgeIndices;
 }
 
 void Renderer3D::render(){
@@ -16,23 +16,23 @@ void Renderer3D::render(){
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-    rotation += 1 * DeltaTime;
+    rotationAngle += 1 * DeltaTime;
     //rotation = 1;
     rotationXenabled = false;
     rotationYenabled = true;
 
-    for (const auto& edge : edges) {
-        Point3D rotatedStartPoint = points[edge.start];
-        Point3D rotatedEndPoint = points[edge.end];
+    for (const auto& edge : edgeIndices) {
+        Point3D rotatedStartPoint = vertices[edge.startIndex];
+        Point3D rotatedEndPoint = vertices[edge.endIndex];
         if (rotationXenabled && rotationYenabled) {
-            rotatedStartPoint = rotateX(rotateY(points[edge.start]));
-            rotatedEndPoint = rotateX(rotateY(points[edge.end]));
+            rotatedStartPoint = rotateX(rotateY(vertices[edge.startIndex]));
+            rotatedEndPoint = rotateX(rotateY(vertices[edge.endIndex]));
         } else if (rotationXenabled) {
-            rotatedStartPoint = rotateX(points[edge.start]);
-            rotatedEndPoint = rotateX(points[edge.end]);
+            rotatedStartPoint = rotateX(vertices[edge.startIndex]);
+            rotatedEndPoint = rotateX(vertices[edge.endIndex]);
         } else if (rotationYenabled) {
-            rotatedStartPoint = rotateY(points[edge.start]);
-            rotatedEndPoint = rotateY(points[edge.end]);
+            rotatedStartPoint = rotateY(vertices[edge.startIndex]);
+            rotatedEndPoint = rotateY(vertices[edge.endIndex]);
         } 
         Point2D start = projection(rotatedStartPoint);
         Point2D end = projection(rotatedEndPoint);
@@ -49,16 +49,16 @@ void Renderer3D::render(){
 Point3D Renderer3D::rotateX(Point3D point){
     Point3D rotatedPoint;
     rotatedPoint.x = point.x;
-    rotatedPoint.y = point.y * cos(rotation) - point.z * sin(rotation);
-    rotatedPoint.z = point.y * sin(rotation) + point.z * cos(rotation);
+    rotatedPoint.y = point.y * cos(rotationAngle) - point.z * sin(rotationAngle);
+    rotatedPoint.z = point.y * sin(rotationAngle) + point.z * cos(rotationAngle);
     return rotatedPoint;
 }
 
 Point3D Renderer3D::rotateY(Point3D point){
     Point3D rotatedPoint;
-    rotatedPoint.x = point.x * cos(rotation) + point.z * sin(rotation);
+    rotatedPoint.x = point.x * cos(rotationAngle) + point.z * sin(rotationAngle);
     rotatedPoint.y = point.y;
-    rotatedPoint.z = -point.x * sin(rotation) + point.z * cos(rotation);
+    rotatedPoint.z = -point.x * sin(rotationAngle) + point.z * cos(rotationAngle);
     return rotatedPoint;
 }
 
