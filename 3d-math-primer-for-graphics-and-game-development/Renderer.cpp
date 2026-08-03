@@ -692,56 +692,79 @@ void	Renderer::init(const VideoMode &mode) {
 		}
 	}
 
-	// Fill in the "present" parameters
+	// Fill in the "present" parameters.  Some modern systems reject the
+	// original fullscreen setup, so we'll try a windowed fallback if needed.
 
-	D3DPRESENT_PARAMETERS	presentParms;
-	presentParms.BackBufferWidth = mode.xRes;
-	presentParms.BackBufferHeight = mode.yRes;
-	presentParms.Windowed = 0;
-	presentParms.BackBufferFormat = d3dMode.Format;
-	presentParms.MultiSampleType = D3DMULTISAMPLE_NONE;
-	presentParms.EnableAutoDepthStencil = TRUE;
-	presentParms.AutoDepthStencilFormat = depthBufferFormat;
-	presentParms.Flags = 0;
-	presentParms.hDeviceWindow = gHwndApp;
-	presentParms.BackBufferCount = 2;
-	presentParms.SwapEffect = D3DSWAPEFFECT_FLIP;
-	if (mode.refreshHz == kRefreshRateDefault) {
-		presentParms.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	} else if (mode.refreshHz == kRefreshRateFastest) {
-		presentParms.FullScreen_RefreshRateInHz = 0;
-	} else {
-		assert(mode.refreshHz > 0);
-		presentParms.FullScreen_RefreshRateInHz = mode.refreshHz;
-	}
-	presentParms.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+	bool createdDevice = false;
+	bool useWindowedFallback = false;
+	for (int attempt = 0 ; attempt < 2 ; ++attempt) {
+		D3DPRESENT_PARAMETERS presentParms;
+		ZeroMemory(&presentParms, sizeof(presentParms));
+		presentParms.BackBufferWidth = mode.xRes;
+		presentParms.BackBufferHeight = mode.yRes;
+		presentParms.Windowed = useWindowedFallback ? TRUE : FALSE;
+		presentParms.BackBufferFormat = d3dMode.Format;
+		presentParms.MultiSampleType = D3DMULTISAMPLE_NONE;
+		presentParms.EnableAutoDepthStencil = TRUE;
+		presentParms.AutoDepthStencilFormat = depthBufferFormat;
+		presentParms.Flags = 0;
+		presentParms.hDeviceWindow = gHwndApp;
+		presentParms.BackBufferCount = 1;
+		presentParms.SwapEffect = D3DSWAPEFFECT_DISCARD;
+		if (mode.refreshHz == kRefreshRateDefault) {
+			presentParms.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+		} else if (mode.refreshHz == kRefreshRateFastest) {
+			presentParms.FullScreen_RefreshRateInHz = 0;
+		} else {
+			assert(mode.refreshHz > 0);
+			presentParms.FullScreen_RefreshRateInHz = mode.refreshHz;
+		}
+		presentParms.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
 
-	// Create hardware transform device, hopefully with vertex and
-	// pixel shader support.
+		if (useWindowedFallback) {
+			SetWindowPos(gHwndApp, HWND_TOP, 0, 0, mode.xRes, mode.yRes, SWP_NOZORDER | SWP_NOMOVE);
+			ShowWindow(gHwndApp, SW_SHOW);
+		}
 
-	result = pD3D->CreateDevice(
-		D3DADAPTER_DEFAULT,
-		D3DDEVTYPE_HAL,
-		gHwndApp,
-		D3DCREATE_FPU_PRESERVE | D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&presentParms,
-		&pD3DDevice
-	);
-	if (!SUCCEEDED(result)) {
-
-		// Nope - try falling back on software vertex processing
+		// Create hardware transform device, hopefully with vertex and
+		// pixel shader support.
 
 		result = pD3D->CreateDevice(
 			D3DADAPTER_DEFAULT,
 			D3DDEVTYPE_HAL,
 			gHwndApp,
-			D3DCREATE_FPU_PRESERVE | D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+			D3DCREATE_FPU_PRESERVE | D3DCREATE_HARDWARE_VERTEXPROCESSING,
 			&presentParms,
 			&pD3DDevice
 		);
 		if (!SUCCEEDED(result)) {
-			ABORT("Can't set video mode to %dx%dx%dbpp", mode.xRes, mode.yRes, mode.bitsPerPixel);
+
+			// Nope - try falling back on software vertex processing
+
+			result = pD3D->CreateDevice(
+				D3DADAPTER_DEFAULT,
+				D3DDEVTYPE_HAL,
+				gHwndApp,
+				D3DCREATE_FPU_PRESERVE | D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+				&presentParms,
+				&pD3DDevice
+			);
 		}
+
+		if (SUCCEEDED(result)) {
+			createdDevice = true;
+			break;
+		}
+
+		if (useWindowedFallback) {
+			break;
+		}
+
+		useWindowedFallback = true;
+	}
+
+	if (!createdDevice) {
+		ABORT("Can't set video mode to %dx%dx%dbpp", mode.xRes, mode.yRes, mode.bitsPerPixel);
 	}
 
 	// Remember resolution

@@ -81,7 +81,7 @@ extern void	mainProgram();
 
 */
 
-long FAR PASCAL WindowProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam) {
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
 	// Make sure this message is for our app
 
