@@ -40,7 +40,7 @@ int main(int argc, char** argv){
         }
 
         renderer3D1.render();
-        printf("Rendering...\n");
+        //printf("Rendering...\n");
     }
 
     SDL_DestroyRenderer(renderer);
