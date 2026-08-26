@@ -14,20 +14,21 @@ Engine::Engine(SDL_Window* window, SDL_Renderer* renderer, const std::vector<Vec
     this->edges = edges;
 }
 
-void Engine::render(float deltaTime){
+void Engine::render(){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-    rotationAngle += 5 * deltaTime; // Rotate at 1 degree per second
-    std::cout << "Rotation Angle: " << rotationAngle << " degrees\n";
-
+    std::cout << "Rotation X: " << rotationAngleX << "\xC2\xB0 " 
+          << "Rotation Y: " << rotationAngleY << "\xC2\xB0\n";
     // Do the transformations
-    Matrix44 scale     = Matrix44::scaling(1.0f, 1.0f, 1.0f);       // half size
-    Matrix44 rotation  = Matrix44::rotationY(degreesToRadians(rotationAngle));    // rotate around Y-axis
-    Matrix44 translate = Matrix44::translation(0.0f, 0.0f, -5.0f);   // move 5 units into the screen (negative Z direction)
+    Matrix44 scale     = Matrix44::scaling(objectScale, objectScale, objectScale); // scale the object
+    Matrix44 rotationY = Matrix44::rotationY(degreesToRadians(rotationAngleY));    // rotate around Y-axis
+    Matrix44 rotationX = Matrix44::rotationX(degreesToRadians(rotationAngleX));    // rotate around X-axis
+    Matrix44 objectTranslation = Matrix44::translation(0.0f, 0.0f, -5.0f);
+    Matrix44 cameraTranslation = Matrix44::translation(-cameraPosition.x,-cameraPosition.y,-cameraPosition.z);
     // Combine the transformations into a single matrix. Order: scale -> rotate -> translate
-    Matrix44 worldMatrix = translate * rotation * scale;
+    Matrix44 worldMatrix = cameraTranslation * objectTranslation * rotationY * rotationX * scale;
     // Create perspective (FOV: 60 degrees, Aspect Ratio: 16/9, Near: 0.1, Far: 100)
     float fov = degreesToRadians(60.0);
     Matrix44 projectionMatrix = Matrix44::perspective(fov, 16.0f / 9.0f, 0.1f, 100.0f);
@@ -62,4 +63,93 @@ void Engine::render(float deltaTime){
     }
 
     SDL_RenderPresent(renderer);
+}
+
+void Engine::update(float deltaTime) {
+    if (key_state[LEFT])  rotationAngleY -= 10 * deltaTime; // Rotate at 10 degree per second
+    if (key_state[RIGHT]) rotationAngleY += 10 * deltaTime; // Rotate at 10 degree per second
+    if (key_state[UP])    rotationAngleX -= 10 * deltaTime; // Rotate at 10 degree per second
+    if (key_state[DOWN])  rotationAngleX += 10 * deltaTime; // Rotate at 10 degree per second
+    if (key_state[E])     objectScale += 1.0f * deltaTime;  // Scale up at 1 unit per second
+    if (key_state[Q])     objectScale -= 1.0f * deltaTime;  // Scale down at 1 unit per second
+    if (key_state[W]) cameraPosition.z -= moveSpeed * deltaTime;
+    if (key_state[S]) cameraPosition.z += moveSpeed * deltaTime;
+    if (key_state[A]) cameraPosition.x -= moveSpeed * deltaTime;
+    if (key_state[D]) cameraPosition.x += moveSpeed * deltaTime;
+}
+
+void Engine::handleEvents() {
+	while(SDL_PollEvent(&event)){
+        if (event.type == SDL_EVENT_QUIT) { 
+            running = false;
+        }
+		if (event.type == SDL_EVENT_KEY_DOWN) {
+			if (event.key.scancode == SDL_SCANCODE_UP) {
+				key_state[UP] = true;
+			}
+			if (event.key.scancode == SDL_SCANCODE_LEFT) {
+				key_state[LEFT] = true;
+			}
+            if (event.key.scancode == SDL_SCANCODE_DOWN) {
+                key_state[DOWN] = true;
+            }
+			if (event.key.scancode == SDL_SCANCODE_RIGHT) {
+				key_state[RIGHT] = true;
+			}
+            if (event.key.scancode == SDL_SCANCODE_W){
+                key_state[W] = true;
+            }
+            if (event.key.scancode == SDL_SCANCODE_A){
+                key_state[A] = true;
+            }
+            if (event.key.scancode == SDL_SCANCODE_S){
+                key_state[S] = true;
+            }
+            if (event.key.scancode == SDL_SCANCODE_D){
+                key_state[D] = true;
+            }
+            if (event.key.scancode == SDL_SCANCODE_Q){
+                key_state[Q] = true;
+            }
+            if (event.key.scancode == SDL_SCANCODE_E){
+                key_state[E] = true;
+            }
+		}
+		if (event.type == SDL_EVENT_KEY_UP) {
+			if (event.key.scancode == SDL_SCANCODE_UP) {
+				key_state[UP] = false;
+			}
+			if (event.key.scancode == SDL_SCANCODE_LEFT) {
+				key_state[LEFT] = false;
+			}
+            if (event.key.scancode == SDL_SCANCODE_DOWN) {
+                key_state[DOWN] = false;
+            }
+			if (event.key.scancode == SDL_SCANCODE_RIGHT) {
+				key_state[RIGHT] = false;
+			}
+            if (event.key.scancode == SDL_SCANCODE_W) {
+                key_state[W] = false;
+            }
+            if (event.key.scancode == SDL_SCANCODE_A) {
+                key_state[A] = false;
+            }
+            if (event.key.scancode == SDL_SCANCODE_S) {
+                key_state[S] = false;
+            }
+            if (event.key.scancode == SDL_SCANCODE_D) {
+                key_state[D] = false;
+            }
+            if (event.key.scancode == SDL_SCANCODE_Q) {
+                key_state[Q] = false;
+            }
+            if (event.key.scancode == SDL_SCANCODE_E) {
+                key_state[E] = false;
+            }
+		}
+	}
+}
+
+bool Engine::isRunning() const {
+    return running;
 }

@@ -3,8 +3,14 @@
 #include <iostream>
 #include "math.h"
 #include "engine.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int main() {
+    #ifdef _WIN32
+        SetConsoleOutputCP(65001); // Enables UTF-8 encoding for Windows terminal
+    #endif
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -42,7 +48,7 @@ int main() {
     int currentFPS = 0;
 	char title[64];
 
-    while (running) {
+    while (render.isRunning()) {
         LAST = NOW;
         NOW = SDL_GetPerformanceCounter();
         deltaTime = static_cast<float>(NOW - LAST) / SDL_GetPerformanceFrequency();
@@ -59,17 +65,9 @@ int main() {
 			SDL_SetWindowTitle(window, title);
 		}
 
-        while (SDL_PollEvent(&Event)) {
-            if (Event.type == SDL_EVENT_QUIT) { 
-                running = false;
-            }
-        }
-
-        if (!running) {
-            break;
-        }
-
-        render.render(deltaTime);
+        render.handleEvents();
+        render.update(deltaTime);
+        render.render();
         //std::cout << "DeltaTime: " << deltaTime << " seconds\n";
     }
 
