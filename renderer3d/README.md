@@ -1,5 +1,5 @@
 3D rendering testing 
 
 ```powershell
-g++ -Iinclude -Llib *.cpp -lSDL3 -o renderer3d
+g++ -I..\include -L..\lib *.cpp -lSDL3 -o ..\renderer3d
 ```
