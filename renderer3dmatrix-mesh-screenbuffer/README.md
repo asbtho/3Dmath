@@ -1,6 +1,6 @@
 3D rendering testing with transformation matrices
 
-Square mesh from triangles, wireframe
+Adding screenbuffer with custom pixel draw functions
 
 ```powershell
 g++ -I..\include -L..\lib *.cpp -lSDL3 -o ..\renderer3dmatrix
